@@ -28,42 +28,39 @@ class image_converter:
     except CvBridgeError as e:
       print(e)
 
-
-    # gray = cv2.cvtColor(cv_image, cv2.COLOR_RGB2GRAY)
-    # color = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-
+    ## Binarize the image to filter out all colours except the road
+    # This line was from the example code from lab 2
     _, img_bin = cv2.threshold(cv_image, 119, 255, cv2.THRESH_BINARY)
 
-
+    ## initialize necessary variables for detecting the line
     foundLine = True
-    rowOfCircle = 200
     startOfLine = 0
     endOfLine = 0
 
-    # The x-position of the ends of the line is detected:
-
-    for j in range(799):
-
-      for i in range(799):
-          if (img_bin[799 - j][i][1] < 50):
-            endOfLine = i
+    ## iterate horizontally across the image from bottom to top until the first row is detected with line
+    for row in range(799):
+      ## iterate from left to right to locate the start and endpoints of the line
+      for col in range(799):
+          if (img_bin[799 - row][col][1] < 50):
+            endOfLine = col
             if (foundLine):
-                startOfLine = i
+                startOfLine = col
                 foundLine = False
           
       if endOfLine != 0:
-        rowOfCircle = j
+        rowOfCircle = row
         break
 
 
-    # The x-position of the midpoint of the line is calculated:
+    ## The x-position of the midpoint of the line is calculated:
     colOfCircle = int(startOfLine + (endOfLine - startOfLine)/2)
 
 
-    # A circle is added to each frame of the video on the midpoint
+    ## A circle is added to each frame of the camera on the midpoint
+    # This function is used to help test whether the line is correctly detected
     cv2.circle(img=cv_image, center = (colOfCircle,798 - rowOfCircle), radius =20, color =(255,0,0), thickness=-1)
 
-
+    ## Display the output of the camera on the robot
     cv2.imshow("Image window", cv_image)
     cv2.waitKey(3)
 
@@ -72,13 +69,17 @@ class image_converter:
     rate = rospy.Rate(2)
     move = Twist()
 
+    
     move.angular.z = 0
+    ## if the line is in the centre of the frame, the robot moves forward
     if (colOfCircle > 350 and colOfCircle < 450):
         move.angular.z = 0
     
+    ## if the line is at the right side of the frame, the robot turns left
     if (colOfCircle < 350):
         move.angular.z = 2
 
+    ## if the line is at the left side of the frame, the robot turns right
     if (colOfCircle > 450):
         move.angular.z = -2
 
