@@ -37,7 +37,8 @@ class image_converter:
     startOfLine = 0
     endOfLine = 0
 
-    ## iterate horizontally across the image from bottom to top until the first row is detected with line
+    ## iterate horizontally across the image from bottom to top until the first row is detected with line 
+    # Most of the code used to detect the midpoint of the line was from my submission of lab 2
     for row in range(799):
       ## iterate from left to right to locate the start and endpoints of the line
       for col in range(799):
